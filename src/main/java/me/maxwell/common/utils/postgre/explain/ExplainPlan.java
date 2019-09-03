@@ -27,8 +27,9 @@ public class ExplainPlan {
         executionTime = JsonHelper.getFloatLikeName(object,"Execution-Time");
         planningTime = JsonHelper.getFloatLikeName(object,"Planning-Time");
 
-        if (object.containsKey("Statement-statistics")) {
-            statementStatistics = new ExplainPlanStatementStatistics(JsonHelper.getJSONObjectLikeName(object,"Statement-statistics"));
+        JSONObject ssObj = JsonHelper.getJSONObjectLikeName(object, "Statement-statistics");
+        if (ssObj != null) {
+            statementStatistics = new ExplainPlanStatementStatistics(ssObj);
         }
 
         this.node = new ExplainPlanNode(JsonHelper.getJSONObjectLikeName(object,"Plan"));

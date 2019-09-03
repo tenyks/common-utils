@@ -5,7 +5,9 @@ import com.alibaba.fastjson.JSONObject;
 import me.maxwell.common.core.JsonHelper;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author Maxwell.Lee
@@ -15,9 +17,19 @@ import java.util.List;
  */
 public class ExplainPlanNode {
 
+    private static final Set<String> ActualExecutionTimeIsSelfNodes = new HashSet<>();
+
+    static {
+//        ActualExecutionTimeIsSelfNodes.add("Redistribute Motion");
+//        ActualExecutionTimeIsSelfNodes.add("Broadcast Motion");
+        ActualExecutionTimeIsSelfNodes.add("Materialize");
+    }
+
     private ExplainPlanNoteLite body;
 
     private Float   selfExecutionTime;
+
+    private Float   sumOfExecutionTime;
 
     private List<ExplainPlanNode>   subNotes;
 
@@ -59,67 +71,42 @@ public class ExplainPlanNode {
             }
         }
 
-
         throw new RuntimeException("不能识别的类型");
     }
 
     private void repairData() {
-        if (body == null || body.getActualTotalTime() == null) {
-            System.out.println("==Body is null==");
-        }
 
-        if (body.getActualTotalTime() == 0.0f) {
-            body.setActualStartupTime(getMinActualStartupTimeOfSubNotes());
-            body.setActualTotalTime(getActualTotalTimeOfSubNotes());
-            body.setActualRows(getSumOfActualRowsOfSubNotes());
-        }
     }
 
     public ExplainPlanNoteLite getBody() {
         return body;
     }
 
-    public Float getSelfExecutionTime() {
+    public Float    getSelfExecutionTime() {
         if (selfExecutionTime == null) {
-            selfExecutionTime = body.getActualTotalTime() - getActualTotalTimeOfSubNotes();
+            this.selfExecutionTime = body.getActualTotalTime() - body.getActualStartupTime();
         }
 
         return selfExecutionTime;
     }
 
-    private Long getSumOfActualRowsOfSubNotes() {
-        if (subNotes == null || subNotes.isEmpty()) return 0L;
-
-        long sum = 0;
-        for (ExplainPlanNode note : subNotes) {
-            sum += note.getBody().getActualRows();
+    public Float    getSumOfExecutionTime() {
+        if (sumOfExecutionTime == null) {
+            sumOfExecutionTime = getSelfExecutionTime() + getTotalExecutionTimeOfSubNotes();
         }
 
-        return sum;
+        return sumOfExecutionTime;
     }
 
-    private Float getActualTotalTimeOfSubNotes() {
+    private Float getTotalExecutionTimeOfSubNotes() {
         if (subNotes == null || subNotes.isEmpty()) return 0.0f;
 
         float sum = 0.0f;
         for (ExplainPlanNode note : subNotes) {
-            sum += note.getBody().getActualTotalTime();
+            sum += note.getSumOfExecutionTime();
         }
 
         return sum;
-    }
-
-    private Float   getMinActualStartupTimeOfSubNotes() {
-        if (subNotes == null || subNotes.isEmpty()) return 0.0f;
-
-        Float ast = subNotes.get(0).getBody().getActualStartupTime();
-        for (ExplainPlanNode note : subNotes) {
-            if (ast <= note.getBody().getActualStartupTime()) {
-                ast = note.getBody().getActualStartupTime();
-            }
-        }
-
-        return ast;
     }
 
     public List<ExplainPlanNode> getSubNotes() {

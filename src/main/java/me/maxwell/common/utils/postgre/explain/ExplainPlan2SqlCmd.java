@@ -20,7 +20,7 @@ public class ExplainPlan2SqlCmd {
     private static final FastDateFormat DateFormat = DateFormatUtils.ISO_8601_EXTENDED_DATETIME_FORMAT;
 
     private static final String InsertIntoExplainPlanTbl = "INSERT INTO pg_explain_plan (uuid,sql_name,memory_used,memory_wanted,execution_time,planning_time,state,create_time) VALUES";
-    private static final String InsertIntoExplainPlanNoteTbl = "INSERT INTO pg_explain_plan_note (uuid,parent_uuid,plan_uuid,self_execution_time,note_type,parent_relationship,strategy,slice,segments,alias,relation,relation_name,gang_type,startup_cost,total_cost,plan_rows,plan_width,actual_startup_time,actual_total_time,actual_rows,actual_loops,share_id,slice_id,senders,receivers,filter,rows_removed_by_filter,join_type,join_filter,rows_removed_by_join_filter,sort_key,sort_method,sort_space_used,sort_space_type,merge_key,group_key,hash_key,hash_cond,extra_text,create_time,state) VALUES ";
+    private static final String InsertIntoExplainPlanNoteTbl = "INSERT INTO pg_explain_plan_node (uuid,parent_uuid,plan_uuid,note_type,parent_relationship,strategy,slice,segments,alias,relation,relation_name,gang_type,startup_cost,total_cost,plan_rows,plan_width,actual_startup_time,actual_total_time,self_execution_time,sum_of_execution_time,actual_rows,actual_loops,share_id,slice_id,senders,receivers,filter,rows_removed_by_filter,join_type,join_filter,rows_removed_by_join_filter,sort_key,sort_method,sort_space_used,sort_space_type,merge_key,group_key,hash_key,hash_cond,extra_text,create_time,state) VALUES ";
 
     public StringBuilder    toSQL(String sqlName, ExplainPlan plan) {
         StringBuilder buf = new StringBuilder();
@@ -79,7 +79,6 @@ public class ExplainPlan2SqlCmd {
         outputFiled(buf, count++, uuid);
         outputFiled(buf, count++, parentUuid);
         outputFiled(buf, count++, planUuid);
-        outputFiled(buf, count++, node.getSelfExecutionTime());
         outputFiled(buf, count++, node.getBody().getNodeType());
         outputFiled(buf, count++, node.getBody().getParentRelationship());
         outputFiled(buf, count++, node.getBody().getStrategy());
@@ -95,6 +94,8 @@ public class ExplainPlan2SqlCmd {
         outputFiled(buf, count++, node.getBody().getPlanWidth());
         outputFiled(buf, count++, node.getBody().getActualStartupTime());
         outputFiled(buf, count++, node.getBody().getActualTotalTime());
+        outputFiled(buf, count++, node.getSelfExecutionTime());
+        outputFiled(buf, count++, node.getSumOfExecutionTime());
         outputFiled(buf, count++, node.getBody().getActualRows());
         outputFiled(buf, count++, node.getBody().getActualLoops());
         outputFiled(buf, count++, node.getBody().getShareID());

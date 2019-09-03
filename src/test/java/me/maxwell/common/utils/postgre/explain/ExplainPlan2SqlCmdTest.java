@@ -25,7 +25,6 @@ public class ExplainPlan2SqlCmdTest {
         List<String> lines = IOUtils.readLines(fis);
         fis.close();
 
-
         FileOutputStream fos = new FileOutputStream(outputFile);
         for (String line : lines) {
             if (line.length() < 8) continue;
